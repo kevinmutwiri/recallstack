@@ -1,0 +1,4 @@
+pytest
+ruff
+isort
+Django==5.2.5
