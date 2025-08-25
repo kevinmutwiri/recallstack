@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Category, Tag
+from .models import Category, Flashcard, Tag
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,3 +25,29 @@ class TagSerializer(serializers.ModelSerializer):
         if not self.context['request'].user.is_superuser:
             validated_data['is_public'] = False
         return super().create(validated_data)
+    
+
+class FlashcardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Flashcard
+        fields = [
+            'id', 'user', 'question', 'answer', 'category', 'tags',
+            'is_code_snippet', 'is_public', 'ease_factor', 'repetitions',
+            'interval', 'last_reviewed', 'next_review_date',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['user', 'ease_factor', 'repetitions', 'interval', 'last_reviewed', 'next_review_date']
+
+    def validate(self, data):
+        if data.get('is_public', False):
+            # Check if associated category is public
+            category = data.get('category')
+            if category and not category.is_public:
+                raise serializers.ValidationError({"category": "Public flashcards must be linked to a public category."})
+
+            # Check if all associated tags are public
+            tags = data.get('tags')
+            if tags and any(not tag.is_public for tag in tags):
+                raise serializers.ValidationError({"tags": "Public flashcards must be linked to public tags only."})
+
+        return data

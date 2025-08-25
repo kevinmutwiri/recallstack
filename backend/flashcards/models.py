@@ -27,3 +27,26 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Flashcard(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    question = models.TextField()
+    answer = models.TextField()
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)
+    tags = models.ManyToManyField('Tag', blank=True)
+    is_code_snippet = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+
+    # Spaced Repetition Fields
+    ease_factor = models.FloatField(default=2.5)
+    repetitions = models.IntegerField(default=0)
+    interval = models.IntegerField(default=0)
+    last_reviewed = models.DateTimeField(null=True, blank=True)
+    next_review_date = models.DateField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Flashcard ID {self.id}: {self.question[:50]}..."
